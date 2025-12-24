@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
-import { Button, Form, Input, Select, DatePicker, Table, Tag, Switch } from "antd";
-import { FiEdit2, FiEye } from "react-icons/fi";
+import { Button, Form, Input, Select, DatePicker, Tag, Switch, Checkbox } from "antd";
+import { FiEdit2, FiEye, FiCalendar } from "react-icons/fi";
 import { BsThreeDotsVertical } from "react-icons/bs";
 import { MdAdd } from "react-icons/md";
-
+import { IoChevronBackOutline, IoChevronForwardOutline } from "react-icons/io5";
 
 import {
   useDeleteNoticeMutation,
@@ -27,7 +27,7 @@ const Notices = () => {
     department: "",
     employeeName: "",
     status: "",
-    publishedDate: "",
+    publishDate: "",
     limit: 10,
   });
   const [currentPage, setCurrentPage] = useState(1);
@@ -47,6 +47,13 @@ const Notices = () => {
   const activeNotices = notices.filter(n => n.status === 'Published').length;
   const draftNotices = notices.filter(n => n.status === 'Draft').length;
 
+  // Get current date
+  const currentDate = new Date().toLocaleDateString('en-US', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric'
+  });
+
   const handleDelete = async (id) => {
     const result = await Swal.fire({
       title: "Are you sure?",
@@ -65,9 +72,7 @@ const Notices = () => {
       Swal.fire({
         icon: "error",
         title: "Failed!!",
-        text:
-          (error.message || error?.data?.message || "Something went wrong.") +
-          " Please try again later.",
+        text: (error.message || error?.data?.message || "Something went wrong.") + " Please try again later.",
       });
     }
   };
@@ -83,91 +88,6 @@ const Notices = () => {
     }
   };
 
-  const columns = [
-    {
-      title: "Title",
-      dataIndex: "title",
-      key: "title",
-      render: (title) => (
-        <span className="font-medium text-gray-800">{title || "N/A"}</span>
-      ),
-    },
-    {
-      title: "Notice Type",
-      dataIndex: "noticeType",
-      key: "noticeType",
-      render: (type) => (
-        <span className="text-gray-600">{type || "N/A"}</span>
-      ),
-    },
-    {
-      title: "Departments/Individual",
-      dataIndex: "department",
-      key: "department",
-      render: (department) => (
-        <span className="text-blue-600 font-medium">{department || "N/A"}</span>
-      ),
-    },
-    {
-      title: "Published On",
-      dataIndex: "publishedOn",
-      key: "publishedOn",
-      render: (date) => (
-        <span className="text-gray-600">
-          {date ? new Date(date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : "N/A"}
-        </span>
-      ),
-    },
-    {
-      title: "Status",
-      dataIndex: "status",
-      key: "status",
-      render: (status) => (
-        <Tag color={status === 'Published' ? 'green' : status === 'Draft' ? 'orange' : 'default'}>
-          {status || "N/A"}
-        </Tag>
-      ),
-    },
-    {
-      title: "Actions",
-      key: "actions",
-      render: (text, record) => (
-        <div className="flex gap-x-2 items-center">
-          <Button 
-            onClick={() => showModal(record)} 
-            type="text" 
-            shape="circle"
-            title="View"
-            icon={<FiEye className="text-gray-600" size={18} />}
-          />
-          <Button 
-            onClick={() => handleEdit(record)} 
-            type="text" 
-            shape="circle"
-            title="Edit"
-            icon={<FiEdit2 className="text-gray-600" size={16} />}
-          />
-          <Button 
-            type="text" 
-            shape="circle"
-            title="More"
-            icon={<BsThreeDotsVertical className="text-gray-600" size={16} />}
-          />
-          <div className="flex items-center gap-2 ml-2">
-            <span className="text-xs text-gray-500">
-              {record.status === 'Published' ? 'Published' : 'Unpublished'}
-            </span>
-            <Switch 
-              size="small"
-              checked={record.status === 'Published'}
-              onChange={() => handleToggleStatus(record._id, record.status)}
-            />
-          </div>
-        </div>
-      ),
-    },
-  ];
-
   useEffect(() => {
     setCurrentPage(1);
   }, [searchQuery]);
@@ -175,10 +95,10 @@ const Notices = () => {
   const handleFilter = () => {
     const values = form.getFieldsValue();
     setSearchQuery({
-      department: values.department || "",
-      employeeName: values.employeeName || "",
+      target: values.target || "",
+      keyword: values.keyword || "",
       status: values.status || "",
-      publishedDate: values.publishedDate ? values.publishedDate.format('YYYY-MM-DD') : "",
+      publishDate: values.publishDate ? values.publishDate.format('YYYY-MM-DD') : "",
       limit: 10,
     });
   };
@@ -186,10 +106,10 @@ const Notices = () => {
   const handleResetFilters = () => {
     form.resetFields();
     setSearchQuery({
-      department: "",
-      employeeName: "",
+      target: "",
+      keyword: "",
       status: "",
-      publishedDate: "",
+      publishDate: "",
       limit: 10,
     });
   };
@@ -200,132 +120,324 @@ const Notices = () => {
   };
 
   const handleEdit = (record) => {
-    // Navigate to edit page or open edit modal
     console.log("Edit notice:", record);
   };
 
-  const rowSelection = {
-    selectedRowKeys: selectedRows,
-    onChange: (selectedRowKeys) => {
-      setSelectedRows(selectedRowKeys);
+  const handleSelectAll = (e) => {
+    if (e.target.checked) {
+      setSelectedRows(notices.map(notice => notice._id));
+    } else {
+      setSelectedRows([]);
+    }
+  };
+
+  const handleSelectRow = (id) => {
+    if (selectedRows.includes(id)) {
+      setSelectedRows(selectedRows.filter(rowId => rowId !== id));
+    } else {
+      setSelectedRows([...selectedRows, id]);
+    }
+  };
+
+  const totalPages = Math.ceil((pagination.totalCount || 0) / (pagination.itemsPerPage || 10));
+
+
+
+  const targetStyles = {
+    all: {
+      text: "All",
+      style: "text-gray-800",
+    },
+    finance: {
+      text: "Finance Department",
+      style: "text-emerald-700",
+    },
+    sales: {
+      text: "Sales Department",
+      style: "text-orange-700",
+    },
+    web: {
+      text: "Web Department",
+      style: "text-sky-700",
+    },
+    database: {
+      text: "Database Department",
+      style: "text-violet-700",
+    },
+    admin: {
+      text: "Admin Department",
+      style: "text-slate-800",
+    },
+    individual: {
+      text: "Individual",
+      style: "text-pink-700",
+    },
+    hr: {
+      text: "HR Department",
+      style: "text-teal-700",
     },
   };
 
+  const statusStyles = {
+    published: {
+      text: "Published",
+      style: "bg-green-100 text-green-700",
+    },
+    unpublished: {
+      text: "Unpublished",
+      style: "bg-red-100 text-red-700",
+    },
+    draft: {
+      text: "Draft",
+      style: "bg-yellow-100 text-yellow-800",
+    },
+  };
+
+
   return (
-    <div className="py-4">
+    <div className="py-4 px-6">
       <LoaderWraperComp isError={isError} isLoading={isLoading}>
-        {/* Header Section */}
-        <div className="bg-white rounded-lg p-6 mb-4">
-          <div className="flex justify-between items-start mb-6">
+
+        {/* header */}
+        <div className="mb-4">
+          <div className="flex justify-between items-start mb-10">
             <div>
               <h2 className="text-2xl font-semibold text-gray-800 mb-2">Notice Management</h2>
-              <div className="flex gap-4 text-sm">
-                <span className="text-green-600 font-medium">Active Notices: {activeNotices}</span>
-                <span className="text-gray-400">|</span>
-                <span className="text-orange-500 font-medium">Draft Notice: {draftNotices}</span>
+              <div className="flex gap-3 text-sm">
+                <span className="text-green-600">Active Notices: <span className="font-semibold">{activeNotices}</span></span>
+                <span className="text-gray-300">|</span>
+                <span className="text-orange-500">Draft Notice: <span className="font-semibold">{draftNotices}</span></span>
               </div>
             </div>
-            <div className="flex gap-2">
-              <Button 
-                type="primary" 
-                className="bg-orange-500 hover:bg-orange-600 border-orange-500"
-                icon={<MdAdd size={20} />}
+            <div className="flex gap-3">
+              <Button
+                type="primary"
+                className="bg-orange-500 hover:bg-orange-600 border-none h-10 px-5 flex items-center gap-2"
                 onClick={() => showModal()}
               >
+                <MdAdd size={20} />
                 Create Notice
               </Button>
-              <Button 
-                className="border-orange-500 text-orange-500 hover:border-orange-600 hover:text-orange-600"
-                icon={<FiEdit2 size={16} />}
+              <Button
+                className="border-orange-500 text-orange-500 hover:border-orange-600 hover:text-orange-600 h-10 px-5 flex items-center gap-2"
               >
+                <FiEdit2 size={16} />
                 All Draft Notice
               </Button>
             </div>
           </div>
 
-          {/* Filter Section */}
-          <Form
-            form={form}
-            layout="inline"
-            className="gap-2"
-          >
-            <span className="text-sm text-gray-600">Filter by:</span>
+          {/* filter sec */}
+          <Form form={form} layout="inline" className="flex items-center justify-end">
+            <span className="text-sm text-gray-600 font-medium pe-4">Filter by:</span>
+
+            <Form.Item name="keyword" className="mb-0">
+              <Input
+                placeholder="Title, Employee Id or Name"
+                className="w-[160px] h-8"
+                allowClear
+                onPressEnter={handleFilter}
+              />
+            </Form.Item>
             
-            <Form.Item name="department" className="mb-0">
+            <Form.Item name="target" className="mb-0">
               <Select
-                placeholder="Departments or individuals"
-                className="w-[200px]"
+                placeholder="Select Target"
+                className="w-[220px]"
+                suffixIcon={<IoChevronForwardOutline className="text-gray-400" />}
                 allowClear
                 onChange={handleFilter}
               >
-                <Option value="all">All Department</Option>
-                <Option value="finance">Finance</Option>
-                <Option value="sales">Sales Team</Option>
-                <Option value="hr">HR</Option>
-                <Option value="database">Database Team</Option>
-                <Option value="admin">Admin</Option>
+                {Object.entries(targetStyles).map(([key, value]) => (
+                  <Option key={key} value={key}>{value.text}</Option>
+                ))}
               </Select>
             </Form.Item>
 
-            <Form.Item name="employeeName" className="mb-0">
-              <Input
-                placeholder="Employee Id or Name"
-                className="w-[180px]"
-                allowClear
-                onChange={handleFilter}
-              />
-            </Form.Item>
 
             <Form.Item name="status" className="mb-0">
               <Select
-                placeholder="Status"
-                className="w-[120px]"
+                placeholder="Select Status"
+                className="w-[140px]"
+                suffixIcon={<IoChevronForwardOutline className="text-gray-400" />}
                 allowClear
                 onChange={handleFilter}
               >
-                <Option value="Published">Published</Option>
-                <Option value="Unpublished">Unpublished</Option>
-                <Option value="Draft">Draft</Option>
+                {Object.entries(statusStyles).map(([key, value]) => (
+                  <Option key={key} value={key}>{value.text}</Option>
+                ))}
               </Select>
             </Form.Item>
 
-            <Form.Item name="publishedDate" className="mb-0">
-              <DatePicker 
+            <Form.Item name="publishDate" className="mb-0">
+              <DatePicker
                 placeholder="Published on"
-                className="w-[160px]"
+                className="w-[160px] h-8"
+                suffixIcon={<FiCalendar className="text-gray-400" size={14} />}
                 onChange={handleFilter}
               />
             </Form.Item>
 
-            <Form.Item className="mb-0">
-              <Button 
-                onClick={handleResetFilters}
-                className="text-blue-600 hover:text-blue-700"
-                type="link"
-              >
-                Reset Filters
-              </Button>
-            </Form.Item>
+            <Button
+              onClick={handleResetFilters}
+              className="border-blue-500 text-blue-500 hover:border-blue-600 hover:text-blue-600 px-4"
+              type="text"
+            >
+              Reset Filters
+            </Button>
           </Form>
         </div>
 
-        {/* Table Section */}
-        <div className="bg-white rounded-lg">
-          <Table
-            columns={columns}
-            dataSource={notices}
-            rowKey={(record) => record._id}
-            rowSelection={rowSelection}
-            pagination={{
-              current: pagination.currentPage || currentPage,
-              pageSize: pagination.itemsPerPage || searchQuery.limit,
-              total: pagination.totalCount || 0,
-              showSizeChanger: false,
-              position: ["bottomCenter"],
-              onChange: (page) => setCurrentPage(page),
-            }}
-            loading={isLoading}
-          />
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead className="bg-gray-50 border-b border-gray-200">
+                <tr>
+                  <th className="ps-6 text-left">
+                    <Checkbox
+                      onChange={handleSelectAll}
+                      checked={selectedRows.length === notices.length && notices.length > 0}
+                      indeterminate={selectedRows.length > 0 && selectedRows.length < notices.length}
+                    />
+                  </th>
+                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">Title</th>
+                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">Type</th>
+                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">Target</th>
+                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">Published On</th>
+                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">Status</th>
+                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-200">
+                {isLoading ? (
+                  <tr>
+                    <td colSpan="7" className="px-6 py-12 text-center text-gray-500">
+                      Loading...
+                    </td>
+                  </tr>
+                ) : notices.length === 0 ? (
+                  <tr>
+                    <td colSpan="7" className="px-6 py-12 text-center text-gray-500">
+                      No notices found
+                    </td>
+                  </tr>
+                ) : (
+                  notices.map((notice) => (
+                    <tr key={notice._id} className="hover:bg-gray-50 transition-colors">
+                      <td className="px-6 py-4">
+                        <Checkbox
+                          checked={selectedRows.includes(notice._id)}
+                          onChange={() => handleSelectRow(notice._id)}
+                        />
+                      </td>
+                      <td className="px-6 py-4">
+                        <span className="text-sm text-gray-800">{notice.title || "N/A"}</span>
+                      </td>
+                      <td className="px-6 py-4">
+                        <span className="text-sm text-gray-600 capitalize">{notice.type || "N/A"}</span>
+                      </td>
+                      <td className="px-6 py-4">
+                        <span className={"text-sm " + (targetStyles[notice.target]?.style || 'bg-gray-200 text-gray-700')}>{targetStyles[notice.target]?.text || "N/A"}</span>
+                      </td>
+                      <td className="px-6 py-4">
+                        <span className="text-sm text-gray-600">
+                          {notice.publishDate
+                            ? new Date(notice.publishDate).toLocaleDateString('en-GB', {
+                              day: '2-digit',
+                              month: 'short',
+                              year: 'numeric'
+                            })
+                            : "N/A"}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4">
+                        <Tag className={"text-sm " + (statusStyles[notice.status]?.style || 'bg-gray-200 text-gray-700')}>{statusStyles[notice.status]?.text || "N/A"}</Tag>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-3">
+                          <button
+                            onClick={() => showModal(notice)}
+                            className="text-gray-500 hover:text-gray-700 transition-colors"
+                            title="View"
+                          >
+                            <FiEye size={18} />
+                          </button>
+                          <button
+                            onClick={() => handleEdit(notice)}
+                            className="text-gray-500 hover:text-gray-700 transition-colors"
+                            title="Edit"
+                          >
+                            <FiEdit2 size={16} />
+                          </button>
+                          <button
+                            className="text-gray-500 hover:text-gray-700 transition-colors"
+                            title="More"
+                          >
+                            <BsThreeDotsVertical size={16} />
+                          </button>
+                          {/* <div className="flex items-center gap-2 ml-2 pl-2 border-l border-gray-200">
+                            <span className="text-xs text-gray-500">
+                              {notice.status === 'Published' ? 'Published' : 'Unpublished'}
+                            </span>
+                            <Switch
+                              size="small"
+                              checked={notice.status === 'Published'}
+                              onChange={() => handleToggleStatus(notice._id, notice.status)}
+                            />
+                          </div> */}
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Pagination */}
+          <div className="flex items-center justify-center gap-2 py-6 border-t border-gray-200">
+            <button
+              onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+              disabled={currentPage === 1}
+              className="w-8 h-8 flex items-center justify-center rounded border border-gray-300 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            >
+              <IoChevronBackOutline size={16} className="text-gray-600" />
+            </button>
+
+            {[...Array(totalPages)].map((_, index) => {
+              const pageNum = index + 1;
+              // Show first page, last page, current page, and pages around current
+              if (
+                pageNum === 1 ||
+                pageNum === totalPages ||
+                (pageNum >= currentPage - 1 && pageNum <= currentPage + 1)
+              ) {
+                return (
+                  <button
+                    key={pageNum}
+                    onClick={() => setCurrentPage(pageNum)}
+                    className={`w-8 h-8 flex items-center justify-center rounded border transition-colors ${currentPage === pageNum
+                      ? 'bg-blue-500 text-white border-blue-500'
+                      : 'border-gray-300 hover:bg-gray-50 text-gray-700'
+                      }`}
+                  >
+                    {pageNum}
+                  </button>
+                );
+              } else if (pageNum === currentPage - 2 || pageNum === currentPage + 2) {
+                return <span key={pageNum} className="text-gray-400">...</span>;
+              }
+              return null;
+            })}
+
+            <button
+              onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+              disabled={currentPage === totalPages}
+              className="w-8 h-8 flex items-center justify-center rounded border border-gray-300 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            >
+              <IoChevronForwardOutline size={16} className="text-gray-600" />
+            </button>
+          </div>
         </div>
       </LoaderWraperComp>
     </div>
