@@ -39,7 +39,7 @@ const Header = () => {
   }, [loacatin.pathname]);
 
   return (
-    <div className="w-full h-[88px] flex justify-between items-center rounded-md py-[16px] px-[32px] bg-gradient-to-t from-[#0ea800] to-[#0e8c03] text-white shadow-sm relative">
+    <div className="w-full p-4 h-[88px] flex justify-between items-center rounded-md py-[16px] px-[32px] bg-white shadow-sm relative">
       <div className="text-start space-y-0.5">
         <p className="text-[24px] font-medium">
           Welcome {user?.name || "to Roam !!!"}

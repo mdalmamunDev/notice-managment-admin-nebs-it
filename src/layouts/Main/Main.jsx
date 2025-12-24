@@ -8,8 +8,8 @@ const Main = () => {
       <div className="">
         <Sidebar />
       </div>
-      <div className="flex-1 pl-[280px]">
-        <div className="sticky top-0 w-full z-10 p-4 pb-0 mb-4 bg-white/30 backdrop-blur-md border-b border-white/30">
+      <div className="flex-1 pl-[280px] bg-gray-100">
+        <div className="sticky top-0 w-full z-10 ps-1 pb-0 mb-4 border-b border-white/30">
           <Header />
         </div>
         {/* <div className="bg-[#E6E6FF] w-full px-6 py-2 mt-1 mb-5">

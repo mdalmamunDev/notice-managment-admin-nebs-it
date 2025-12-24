@@ -1,8 +1,8 @@
 import { baseApi } from "../../api/baseApi";
 
-const contactsApi = baseApi.injectEndpoints({
+const noticesApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
-    getAllContacts: builder.query({
+    getAllNotices: builder.query({
       query: (args) => {
         const params = new URLSearchParams();
         if (args) {
@@ -12,54 +12,54 @@ const contactsApi = baseApi.injectEndpoints({
           });
         }
         return {
-          url: "contact",
+          url: "notice",
           method: "GET",
           params,
         };
       },
-      providesTags: ["contact"],
+      providesTags: ["notice"],
     }),
-    storeContact: builder.mutation({
+    storeNotice: builder.mutation({
       query: (payload) => ({
-        url: `contact`,
+        url: `notice`,
         method: "POST",
         body: payload
       }),
-      invalidatesTags: ["contact"],
+      invalidatesTags: ["notice"],
     }),
-    updateContact: builder.mutation({
+    updateNotice: builder.mutation({
       query: ({ id, payload }) => ({
-        url: `contact/${id}`,
+        url: `notice/${id}`,
         method: "PUT",
         body: payload
       }),
-      invalidatesTags: ["contact"],
+      invalidatesTags: ["notice"],
     }),
-    // Mark multiple contacts as read
+    // Mark multiple notices as read
     markAsRead: builder.mutation({
       query: (data) => ({
-        url: '/contact/mark-read',
+        url: '/notice/mark-read',
         method: 'PATCH',
         body: data,
       }),
-      invalidatesTags: ['Contact'],
+      invalidatesTags: ['Notice'],
     }),
-    deleteContact: builder.mutation({
+    deleteNotice: builder.mutation({
       query: ({ id }) => ({
-        url: `contact/${id}`,
+        url: `notice/${id}`,
         method: "DELETE",
       }),
-      invalidatesTags: ["contact"],
+      invalidatesTags: ["notice"],
     }),
   }),
 });
 
 export const {
-  useGetAllContactsQuery,
-  useStoreContactMutation,
-  useUpdateContactMutation,
+  useGetAllNoticesQuery,
+  useStoreNoticeMutation,
+  useUpdateNoticeMutation,
   useMarkAsReadMutation,
-  useDeleteContactMutation
-} = contactsApi;
+  useDeleteNoticeMutation
+} = noticesApi;
 
-export default contactsApi;
+export default noticesApi;
