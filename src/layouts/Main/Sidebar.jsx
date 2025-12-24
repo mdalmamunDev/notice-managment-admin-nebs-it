@@ -9,12 +9,14 @@ import { cn } from "../../lib/utils";
 import { useDispatch, useSelector } from "react-redux";
 import { logout } from "../../redux/features/Auth/authSlice";
 import logo from '../../assets/images/logo.svg'
+
 const Sidebar = () => {
   const { user } = useSelector((state) => state.auth);
   const location = useLocation();
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const [openNome, setOpenNome] = useState({});
+
   const handleLogOut = () => {
     Swal.fire({
       text: "Are you sure you want to logout?",
@@ -32,16 +34,18 @@ const Sidebar = () => {
       }
     });
   };
-  // useEffect(() => {
-  // }, [location.pathname]);
+
   return (
-    <div className="fixed top-0 left-0 w-[280px] min-h-screen h-full p-4 pe-0">
-      <div className="h-full flex flex-col justify-between bg-1 rounded-md border drop-shadow pt-[1px]">
-        <div className="">
-          <div className="w-full flex justify-center items-center py-14">
-            <img src={logo} alt="" />
-          </div>
-          <ul className="max-h-[650px] overflow-y-auto space-y-1 xl:space-y-2 hide-scrollbar">
+    <div className="fixed top-0 left-0 w-[280px] min-h-screen h-full bg-white">
+      <div className="h-full flex flex-col">
+        {/* Logo Section */}
+        <div className="w-full flex justify-start items-center px-6 py-8">
+          <img src={logo} alt="Nebs-IT" className="h-10" />
+        </div>
+
+        {/* Navigation Menu */}
+        <nav className="flex-1 px-4 overflow-y-auto hide-scrollbar">
+          <ul className="space-y-1">
             {routeLinkGenerators(dashboardItems, user.role).map(
               ({ name, icon, path, children, rootPath }, indx) =>
                 children?.length ? (
@@ -53,32 +57,34 @@ const Sidebar = () => {
                         }));
                       }}
                       className={cn(
-                        "outline-none text-white text-[20px] w-full pl-6 pr-4 py-3 flex items-center justify-between gap-3 text-lg transition-all font-medium",
+                        "outline-none text-gray-600 text-base w-full px-4 py-3.5 flex items-center justify-between gap-3 transition-all font-normal rounded-lg hover:bg-gray-50",
                         {
-                          "text-lime-400":
-                            name !== openNome?.name &&
+                          "bg-gray-50 text-gray-900":
+                            name === openNome?.name ||
                             (location.pathname.includes(rootPath) &&
-                              openNome.name),
+                              !openNome.name),
                         }
                       )}
                     >
                       <div className="flex items-center justify-start gap-3">
-                        <div>{createElement(icon, { size: "20" })}</div>
+                        <div className="text-gray-400">
+                          {createElement(icon, { size: "22" })}
+                        </div>
                         <span>{name}</span>
                       </div>
                       <MdOutlineArrowRight
-                        className={cn("text-white-500", {
-                          "rotate-90 text-white":
+                        className={cn("text-gray-400 transition-transform", {
+                          "rotate-90":
                             name === openNome?.name ||
                             (location.pathname.includes(rootPath) &&
                               !openNome.name),
                         })}
-                        size={23}
+                        size={20}
                       />
                     </button>
                     <div
                       className={cn(
-                        "space-y-0.5 h-0 overflow-hidden",
+                        "space-y-0.5 h-0 overflow-hidden transition-all",
                         {
                           "h-fit pt-1":
                             name === openNome?.name ||
@@ -87,18 +93,24 @@ const Sidebar = () => {
                         }
                       )}
                     >
-                      {children?.map(({ subName, subPath, subIcon, role }, inx) => (
+                      {children?.map(({ subName, subPath, subIcon }, inx) => (
                         <NavLink
                           key={inx}
                           to={subPath}
                           className={({ isActive }) =>
-                            isActive
-                              ? "bg-white text-s-1 w-full pl-6 pr-4 py-3 flex items-center justify-start gap-3 text-[16px] font-medium transition-all ms-4"
-                              : "text-white hover:text-indigo-200 w-full pl-6 pr-4 py-3 flex items-center justify-start gap-3 text-[16px] font-medium transition-all ms-4"
+                            cn(
+                              "text-gray-600 w-full pl-12 pr-4 py-3 flex items-center justify-start gap-3 text-sm font-normal transition-all rounded-lg hover:bg-gray-50",
+                              {
+                                "bg-gray-50 text-gray-900 border-r-4 border-orange-500":
+                                  isActive,
+                              }
+                            )
                           }
                         >
-                          <div>{createElement(subIcon, { size: "17" })}</div>
-                          <span> {subName}</span>
+                          <div className="text-gray-400">
+                            {createElement(subIcon, { size: "18" })}
+                          </div>
+                          <span>{subName}</span>
                         </NavLink>
                       ))}
                     </div>
@@ -115,25 +127,33 @@ const Sidebar = () => {
                     <NavLink
                       to={path}
                       className={({ isActive }) =>
-                        isActive
-                          ? "bg-white text-indigo-500 text-s-1 w-full pl-6 pr-4 py-3 flex items-center justify-start gap-3 text-[16px] font-medium transition-all"
-                          : "text-white hover:text-indigo-200 w-full pl-6 pr-4 py-3 flex items-center justify-start gap-3 text-[16px] font-medium transition-all"
+                        cn(
+                          "text-gray-600 w-full px-4 py-3.5 flex items-center justify-start gap-3 text-base font-normal transition-all rounded-lg hover:bg-gray-50",
+                          {
+                            "bg-gray-50 text-gray-900 border-r-4 border-orange-500":
+                              isActive,
+                          }
+                        )
                       }
                     >
-                      <div>{createElement(icon, { size: "20" })}</div>
+                      <div className="text-gray-400">
+                        {createElement(icon, { size: "22" })}
+                      </div>
                       <span>{name}</span>
                     </NavLink>
                   </li>
                 )
             )}
           </ul>
-        </div>
-        <div className="p-4 mt-auto">
+        </nav>
+
+        {/* Logout Button */}
+        <div className="p-4 mt-auto border-t border-gray-100">
           <button
             onClick={handleLogOut}
-            className="bg-light-gray/20 w-full px-4 py-3 flex items-center justify-start gap-3 text-lg outline-none text-white rounded-lg"
+            className="bg-transparent w-full px-4 py-3 flex items-center justify-start gap-3 text-base outline-none text-gray-600 rounded-lg hover:bg-gray-50 transition-all"
           >
-            <FiLogOut className="text-red-400" size={20} />
+            <FiLogOut className="text-gray-400" size={20} />
             <span>Logout</span>
           </button>
         </div>
