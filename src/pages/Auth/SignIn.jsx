@@ -132,7 +132,7 @@ const SignIn = () => {
                     onClick={() => navigate("/auth/forgot-password")}
                     type="link"
                     className="font-medium"
-                    style={{color: 'red !important' }}
+                    style={{ color: 'red !important' }}
                   >
                     <span className="text-green-600 underline cursor-pointer hover:text-green-700">Forget password?</span>
                   </Button>
@@ -148,6 +148,9 @@ const SignIn = () => {
                   Sign In
                 </Button>
               </Form.Item>
+              <span className="block text-sm text-gray-600 bg-gray-100 rounded-md px-3 py-2">
+                Test login — <span className="font-mono">admin@gmail.com</span> / <span className="font-mono">1qazxsw2</span>
+              </span>
             </Form>
           </div>
         </div>
