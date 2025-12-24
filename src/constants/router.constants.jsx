@@ -7,6 +7,7 @@ import { HiOutlineDocumentText } from "react-icons/hi";
 import { IoExitOutline } from "react-icons/io5";
 import { FiUsers } from "react-icons/fi";
 import Notices from "../pages/Main/Notices/Notices";
+import CreateNotice from "../pages/Main/Notices/CreateNotice";
 
 export const dashboardItems = [
   {
@@ -15,7 +16,7 @@ export const dashboardItems = [
     icon: RiDashboardHorizontalLine,
     element: <></>,
   },
-    {
+  {
     name: "Employee",
     rootPath: "employee",
     icon: FaRegUser,
@@ -23,22 +24,22 @@ export const dashboardItems = [
       {
         name: "Employee Database",
         path: "/employee-database",
-        icon: () => {},
+        icon: () => { },
       },
       {
         name: "Add New Employee",
         path: "/employee-add",
-        icon: () => {},
+        icon: () => { },
       },
       {
         name: "Performance Report",
         path: "/employee-report",
-        icon: () => {},
+        icon: () => { },
       },
       {
         name: "Performance History",
         path: "/employee-history",
-        icon: () => {},
+        icon: () => { },
       },
     ],
   },
@@ -74,12 +75,12 @@ export const dashboardItems = [
       {
         name: "Job Postings",
         path: "/career-database/job-postings",
-        icon: () => {},
+        icon: () => { },
       },
       {
         name: "Applications",
         path: "/career-database/applications",
-        icon: () => {},
+        icon: () => { },
       },
     ],
   },
@@ -94,6 +95,14 @@ export const dashboardItems = [
     path: "/notice-board",
     icon: LuClipboardList,
     element: <Notices />,
+  },
+  {
+    path: 'notice-board/create',
+    element: <CreateNotice />
+  },
+  {
+    path: 'notice-board/edit/:id',
+    element: <CreateNotice />
   },
   {
     name: "Activity Log",

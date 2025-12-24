@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
-import { Button, Form, Input, Select, DatePicker, Tag, Switch, Checkbox } from "antd";
-import { FiEdit2, FiEye, FiCalendar } from "react-icons/fi";
+import { Button, Form, Input, Select, DatePicker, Tag, Checkbox } from "antd";
+import { FiEdit2, FiEye, FiCalendar, FiPaperclip } from "react-icons/fi";
 import { BsThreeDotsVertical } from "react-icons/bs";
 import { MdAdd } from "react-icons/md";
 import { IoChevronBackOutline, IoChevronForwardOutline } from "react-icons/io5";
+import { useNavigate } from "react-router-dom";
 
 import {
   useDeleteNoticeMutation,
@@ -19,13 +20,14 @@ const { Option } = Select;
 
 const Notices = () => {
   const [form] = Form.useForm();
+  const navigate = useNavigate();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalData, setModalData] = useState({});
   const [selectedRows, setSelectedRows] = useState([]);
 
   const [searchQuery, setSearchQuery] = useState({
-    department: "",
-    employeeName: "",
+    target: "",
+    keyword: "",
     status: "",
     publishDate: "",
     limit: 10,
@@ -44,15 +46,8 @@ const Notices = () => {
   const pagination = response?.pagination || {};
 
   // Calculate active and draft notices
-  const activeNotices = notices.filter(n => n.status === 'Published').length;
-  const draftNotices = notices.filter(n => n.status === 'Draft').length;
-
-  // Get current date
-  const currentDate = new Date().toLocaleDateString('en-US', {
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric'
-  });
+  const activeNotices = notices.filter(n => n.status === 'published').length;
+  const draftNotices = notices.filter(n => n.status === 'draft').length;
 
   const handleDelete = async (id) => {
     const result = await Swal.fire({
@@ -68,6 +63,7 @@ const Notices = () => {
       await deleteNotice({ id });
       toast.success("Notice deleted successfully.");
       setCurrentPage(1);
+      refetch();
     } catch (error) {
       Swal.fire({
         icon: "error",
@@ -77,11 +73,18 @@ const Notices = () => {
     }
   };
 
-  const handleToggleStatus = async (id, currentStatus) => {
+  const handleStatusClick = async (notice) => {
+    const statusMap = {
+      'published': 'unpublished',
+      'unpublished': 'draft',
+      'draft': 'published'
+    };
+    
+    const newStatus = statusMap[notice.status] || 'published';
+    
     try {
-      const newStatus = currentStatus === 'Published' ? 'Unpublished' : 'Published';
-      await updateNotice({ id, payload: { status: newStatus } });
-      toast.success(`Notice ${newStatus.toLowerCase()} successfully`);
+      await updateNotice({ id: notice._id, payload: { status: newStatus } }).unwrap();
+      toast.success(`Notice status changed to ${newStatus}`);
       refetch();
     } catch (error) {
       toast.error("Failed to update status");
@@ -120,7 +123,16 @@ const Notices = () => {
   };
 
   const handleEdit = (record) => {
-    console.log("Edit notice:", record);
+    navigate(`/notice-board/edit/${record._id}`);
+  };
+
+  const handleCreateNotice = () => {
+    navigate('/notice-board/create');
+  };
+
+  const handleViewDrafts = () => {
+    form.setFieldsValue({ status: 'draft' });
+    handleFilter();
   };
 
   const handleSelectAll = (e) => {
@@ -141,31 +153,29 @@ const Notices = () => {
 
   const totalPages = Math.ceil((pagination.totalCount || 0) / (pagination.itemsPerPage || 10));
 
-
-
   const targetStyles = {
     all: {
-      text: "All",
+      text: "All Department",
       style: "text-gray-800",
     },
     finance: {
-      text: "Finance Department",
+      text: "Finance",
       style: "text-emerald-700",
     },
     sales: {
-      text: "Sales Department",
+      text: "Sales Team",
       style: "text-orange-700",
     },
     web: {
-      text: "Web Department",
+      text: "Web Team",
       style: "text-sky-700",
     },
     database: {
-      text: "Database Department",
+      text: "Database Team",
       style: "text-violet-700",
     },
     admin: {
-      text: "Admin Department",
+      text: "Admin",
       style: "text-slate-800",
     },
     individual: {
@@ -173,7 +183,7 @@ const Notices = () => {
       style: "text-pink-700",
     },
     hr: {
-      text: "HR Department",
+      text: "HR",
       style: "text-teal-700",
     },
   };
@@ -181,23 +191,21 @@ const Notices = () => {
   const statusStyles = {
     published: {
       text: "Published",
-      style: "bg-green-100 text-green-700",
+      style: "bg-green-100 text-green-700 border-0",
     },
     unpublished: {
       text: "Unpublished",
-      style: "bg-red-100 text-red-700",
+      style: "bg-red-100 text-red-700 border-0",
     },
     draft: {
       text: "Draft",
-      style: "bg-yellow-100 text-yellow-800",
+      style: "bg-yellow-100 text-yellow-800 border-0",
     },
   };
-
 
   return (
     <div className="py-4 px-6">
       <LoaderWraperComp isError={isError} isLoading={isLoading}>
-
         {/* header */}
         <div className="mb-4">
           <div className="flex justify-between items-start mb-10">
@@ -213,13 +221,14 @@ const Notices = () => {
               <Button
                 type="primary"
                 className="bg-orange-500 hover:bg-orange-600 border-none h-10 px-5 flex items-center gap-2"
-                onClick={() => showModal()}
+                onClick={handleCreateNotice}
               >
                 <MdAdd size={20} />
                 Create Notice
               </Button>
               <Button
                 className="border-orange-500 text-orange-500 hover:border-orange-600 hover:text-orange-600 h-10 px-5 flex items-center gap-2"
+                onClick={handleViewDrafts}
               >
                 <FiEdit2 size={16} />
                 All Draft Notice
@@ -253,7 +262,6 @@ const Notices = () => {
                 ))}
               </Select>
             </Form.Item>
-
 
             <Form.Item name="status" className="mb-0">
               <Select
@@ -334,10 +342,12 @@ const Notices = () => {
                         <span className="text-sm text-gray-800">{notice.title || "N/A"}</span>
                       </td>
                       <td className="px-6 py-4">
-                        <span className="text-sm text-gray-600 capitalize">{notice.type || "N/A"}</span>
+                        <span className="text-sm text-gray-600 capitalize">{notice.type?.replace(/_/g, ' ') || "N/A"}</span>
                       </td>
                       <td className="px-6 py-4">
-                        <span className={"text-sm " + (targetStyles[notice.target]?.style || 'bg-gray-200 text-gray-700')}>{targetStyles[notice.target]?.text || "N/A"}</span>
+                        <span className={"text-sm font-medium " + (targetStyles[notice.target]?.style || 'text-gray-700')}>
+                          {targetStyles[notice.target]?.text || notice.target || "N/A"}
+                        </span>
                       </td>
                       <td className="px-6 py-4">
                         <span className="text-sm text-gray-600">
@@ -351,7 +361,13 @@ const Notices = () => {
                         </span>
                       </td>
                       <td className="px-6 py-4">
-                        <Tag className={"text-sm " + (statusStyles[notice.status]?.style || 'bg-gray-200 text-gray-700')}>{statusStyles[notice.status]?.text || "N/A"}</Tag>
+                        <Tag 
+                          className={"text-xs px-3 py-1 rounded-full cursor-pointer hover:opacity-80 transition-opacity " + (statusStyles[notice.status]?.style || 'bg-gray-200 text-gray-700')}
+                          onClick={() => handleStatusClick(notice)}
+                          title="Click to change status"
+                        >
+                          {statusStyles[notice.status]?.text || notice.status || "N/A"}
+                        </Tag>
                       </td>
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-3">
@@ -370,21 +386,12 @@ const Notices = () => {
                             <FiEdit2 size={16} />
                           </button>
                           <button
-                            className="text-gray-500 hover:text-gray-700 transition-colors"
-                            title="More"
+                            onClick={() => handleDelete(notice._id)}
+                            className="text-gray-500 hover:text-red-600 transition-colors"
+                            title="Delete"
                           >
                             <BsThreeDotsVertical size={16} />
                           </button>
-                          {/* <div className="flex items-center gap-2 ml-2 pl-2 border-l border-gray-200">
-                            <span className="text-xs text-gray-500">
-                              {notice.status === 'Published' ? 'Published' : 'Unpublished'}
-                            </span>
-                            <Switch
-                              size="small"
-                              checked={notice.status === 'Published'}
-                              onChange={() => handleToggleStatus(notice._id, notice.status)}
-                            />
-                          </div> */}
                         </div>
                       </td>
                     </tr>
@@ -406,7 +413,6 @@ const Notices = () => {
 
             {[...Array(totalPages)].map((_, index) => {
               const pageNum = index + 1;
-              // Show first page, last page, current page, and pages around current
               if (
                 pageNum === 1 ||
                 pageNum === totalPages ||
@@ -416,10 +422,11 @@ const Notices = () => {
                   <button
                     key={pageNum}
                     onClick={() => setCurrentPage(pageNum)}
-                    className={`w-8 h-8 flex items-center justify-center rounded border transition-colors ${currentPage === pageNum
-                      ? 'bg-blue-500 text-white border-blue-500'
-                      : 'border-gray-300 hover:bg-gray-50 text-gray-700'
-                      }`}
+                    className={`w-8 h-8 flex items-center justify-center rounded border transition-colors ${
+                      currentPage === pageNum
+                        ? 'bg-blue-500 text-white border-blue-500'
+                        : 'border-gray-300 hover:bg-gray-50 text-gray-700'
+                    }`}
                   >
                     {pageNum}
                   </button>
@@ -439,6 +446,152 @@ const Notices = () => {
             </button>
           </div>
         </div>
+
+        {/* Notice Details Modal */}
+        <DashboardModal 
+          setIsModalOpen={setIsModalOpen} 
+          isModalOpen={isModalOpen} 
+          width="800px" 
+          maxWidth="95%"
+        >
+          <div className="text-base space-y-6">
+            <h6 className="font-semibold text-2xl text-center text-gray-800 mb-4">Notice Details</h6>
+
+            <div className="space-y-5">
+              <div className="bg-gray-50 p-4 rounded-lg">
+                <p className="text-xs font-medium text-gray-500 mb-2">Title</p>
+                <p className="text-lg font-semibold text-gray-900">{modalData?.title || "N/A"}</p>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <p className="text-xs font-medium text-gray-500 mb-2">Notice Type</p>
+                  <p className="text-sm text-gray-800 capitalize">{modalData?.type?.replace(/_/g, ' ') || "N/A"}</p>
+                </div>
+
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <p className="text-xs font-medium text-gray-500 mb-2">Target</p>
+                  <p className={"text-sm font-medium " + (targetStyles[modalData?.target]?.style || 'text-gray-800')}>
+                    {targetStyles[modalData?.target]?.text || modalData?.target || "N/A"}
+                  </p>
+                </div>
+              </div>
+
+              {modalData?.target === 'individual' && (
+                <div className="grid grid-cols-3 gap-4 bg-blue-50 p-4 rounded-lg border border-blue-200">
+                  <div>
+                    <p className="text-xs font-medium text-gray-600 mb-1">Employee ID</p>
+                    <p className="text-sm font-semibold text-gray-800">{modalData?.employeeId || "N/A"}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs font-medium text-gray-600 mb-1">Employee Name</p>
+                    <p className="text-sm font-semibold text-gray-800">{modalData?.employeeName || "N/A"}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs font-medium text-gray-600 mb-1">Position</p>
+                    <p className="text-sm font-semibold text-gray-800">{modalData?.employeePosition || "N/A"}</p>
+                  </div>
+                </div>
+              )}
+
+              <div>
+                <p className="text-xs font-medium text-gray-500 mb-2">Notice Body</p>
+                <div className="bg-white p-4 rounded-lg border border-gray-200 text-sm leading-relaxed whitespace-pre-wrap min-h-[120px]">
+                  {modalData?.body || "No content available."}
+                </div>
+              </div>
+
+              {modalData?.creator && (
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <p className="text-xs font-medium text-gray-500 mb-2">Created By</p>
+                  <div className="flex items-center gap-3">
+                    <img 
+                      src={modalData.creator.profileImage || '/default-avatar.png'} 
+                      alt={modalData.creator.name}
+                      className="w-10 h-10 rounded-full object-cover"
+                    />
+                    <div>
+                      <p className="text-sm font-medium text-gray-800">{modalData.creator.name}</p>
+                      <p className="text-xs text-gray-500">{modalData.creator.email}</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <p className="text-xs font-medium text-gray-500 mb-2">Status</p>
+                  <Tag 
+                    className={"text-xs px-3 py-1 rounded-full cursor-pointer hover:opacity-80 " + (statusStyles[modalData?.status]?.style || 'bg-gray-200 text-gray-700')}
+                    onClick={() => {
+                      handleStatusClick(modalData);
+                      setIsModalOpen(false);
+                    }}
+                    title="Click to change status"
+                  >
+                    {statusStyles[modalData?.status]?.text || modalData?.status || "N/A"}
+                  </Tag>
+                </div>
+
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <p className="text-xs font-medium text-gray-500 mb-2">Published On</p>
+                  <p className="text-sm text-gray-700">
+                    {modalData?.publishDate 
+                      ? new Date(modalData.publishDate).toLocaleString('en-GB', {
+                          day: '2-digit',
+                          month: 'short',
+                          year: 'numeric',
+                          hour: '2-digit',
+                          minute: '2-digit'
+                        })
+                      : "N/A"}
+                  </p>
+                </div>
+              </div>
+
+              {modalData?.attachments && modalData.attachments.length > 0 && (
+                <div>
+                  <p className="text-xs font-medium text-gray-500 mb-3">Attachments ({modalData.attachments.length})</p>
+                  <div className="space-y-2">
+                    {modalData.attachments.map((filename, index) => (
+                      <a
+                        key={index}
+                        href={`${import.meta.env.VITE_IMAGE_URL}/${filename}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-3 bg-gray-50 hover:bg-gray-100 px-4 py-3 rounded-lg border border-gray-200 transition-colors"
+                      >
+                        <FiPaperclip className="text-blue-500" size={16} />
+                        <span className="text-sm text-gray-700 flex-1">{filename}</span>
+                        <span className="text-xs text-gray-400">View</span>
+                      </a>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div className="flex justify-end gap-3 pt-4 border-t">
+              <Button 
+                type="default" 
+                onClick={() => setIsModalOpen(false)}
+                className="px-6"
+              >
+                Close
+              </Button>
+              <Button
+                type="primary"
+                className="bg-blue-600 px-6"
+                onClick={() => {
+                  setIsModalOpen(false);
+                  handleEdit(modalData);
+                }}
+              >
+                Edit Notice
+              </Button>
+            </div>
+          </div>
+        </DashboardModal>
       </LoaderWraperComp>
     </div>
   );
