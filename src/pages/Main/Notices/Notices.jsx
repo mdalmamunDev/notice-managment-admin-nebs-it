@@ -46,7 +46,8 @@ const Notices = () => {
   const pagination = response?.pagination || {};
 
   // Calculate active and draft notices
-  const activeNotices = notices.filter(n => n.status === 'published').length;
+  const publishedNotices = notices.filter(n => n.status === 'published').length;
+  const unpublishedNotices = notices.filter(n => n.status === 'un-published').length;
   const draftNotices = notices.filter(n => n.status === 'draft').length;
 
   const handleDelete = async (id) => {
@@ -212,9 +213,11 @@ const Notices = () => {
             <div>
               <h2 className="text-2xl font-semibold text-gray-800 mb-2">Notice Management</h2>
               <div className="flex gap-3 text-sm">
-                <span className="text-green-600">Active Notices: <span className="font-semibold">{activeNotices}</span></span>
+                <span className="text-green-600">Published: <span className="font-bold">{publishedNotices}</span></span>
                 <span className="text-gray-300">|</span>
-                <span className="text-orange-500">Draft Notice: <span className="font-semibold">{draftNotices}</span></span>
+                <span className="text-red-500">Unpublished: <span className="font-bold">{unpublishedNotices}</span></span>
+                <span className="text-gray-300">|</span>
+                <span className="text-yellow-500">Draft: <span className="font-bold">{draftNotices}</span></span>
               </div>
             </div>
             <div className="flex gap-3">
@@ -506,7 +509,7 @@ const Notices = () => {
                   <p className="text-xs font-medium text-gray-500 mb-2">Created By</p>
                   <div className="flex items-center gap-3">
                     <img 
-                      src={modalData.creator.profileImage || '/default-avatar.png'} 
+                      src={`${import.meta.env.VITE_IMAGE_URL}/${modalData.creator.profileImage}`} 
                       alt={modalData.creator.name}
                       className="w-10 h-10 rounded-full object-cover"
                     />
@@ -556,7 +559,7 @@ const Notices = () => {
                     {modalData.attachments.map((filename, index) => (
                       <a
                         key={index}
-                        href={`${import.meta.env.VITE_IMAGE_URL}/${filename}`}
+                        href={`${import.meta.env.VITE_SERVER_URL}/${filename}`}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="flex items-center gap-3 bg-gray-50 hover:bg-gray-100 px-4 py-3 rounded-lg border border-gray-200 transition-colors"

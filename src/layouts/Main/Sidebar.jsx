@@ -39,7 +39,7 @@ const Sidebar = () => {
     <div className="fixed top-0 left-0 w-[280px] min-h-screen h-full bg-white">
       <div className="h-full flex flex-col">
         {/* Logo Section */}
-        <div className="w-full flex justify-start items-center px-6 py-8">
+        <div className="w-full flex justify-start items-center p-12">
           <img src={logo} alt="Nebs-IT" className="h-10" />
         </div>
 

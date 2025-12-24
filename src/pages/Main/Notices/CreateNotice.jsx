@@ -233,109 +233,30 @@ const CreateNotice = () => {
           </button>
         </div>
 
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          <p className="text-sm text-gray-600 mb-6">Please fill in the details below</p>
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-200">
+          <p className="text-xl font-semibold  p-6">Please fill in the details below</p>
+          <hr></hr>
 
-          <Form
-            form={form}
-            layout="vertical"
-            onFinish={(values) => handleSubmit(values, false)}
-          >
-            {/* Target Department/Individual */}
-            <Form.Item
-              label={<span className="text-sm font-medium">Target Department(s) or Individual</span>}
-              name="target"
-              rules={[{ required: true, message: "Please select target" }]}
+          <div className="p-6">
+            <Form
+              form={form}
+              layout="vertical"
+              onFinish={(values) => handleSubmit(values, false)}
             >
-              <Select
-                placeholder="Individual"
-                size="large"
-                suffixIcon={<IoChevronForwardOutline className="text-gray-400" />}
-                onChange={handleTargetChange}
-              >
-                {targetOptions.map(option => (
-                  <Option key={option.value} value={option.value}>
-                    {option.label}
-                  </Option>
-                ))}
-              </Select>
-            </Form.Item>
-
-            {/* Notice Title */}
-            <Form.Item
-              label={<span className="text-sm font-medium">Notice Title</span>}
-              name="title"
-              rules={[{ required: true, message: "Please enter notice title" }]}
-            >
-              <Input
-                placeholder="Write the Title of Notice"
-                size="large"
-              />
-            </Form.Item>
-
-            {/* Employee Fields - Show only when Individual is selected */}
-            {showEmployeeFields && (
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                <Form.Item
-                  label={<span className="text-sm font-medium">Select Employee ID</span>}
-                  name="employeeId"
-                  rules={[{ required: showEmployeeFields, message: "Required" }]}
-                >
-                  <Select
-                    placeholder="Select employee designation"
-                    size="large"
-                    suffixIcon={<IoChevronForwardOutline className="text-gray-400" />}
-                  >
-                    <Option value="EMP001">EMP001</Option>
-                    <Option value="EMP002">EMP002</Option>
-                    <Option value="EMP12345">EMP12345</Option>
-                  </Select>
-                </Form.Item>
-
-                <Form.Item
-                  label={<span className="text-sm font-medium">Employee Name</span>}
-                  name="employeeName"
-                  rules={[{ required: showEmployeeFields, message: "Required" }]}
-                >
-                  <Input
-                    placeholder="Enter employee full name"
-                    size="large"
-                  />
-                </Form.Item>
-
-                <Form.Item
-                  label={<span className="text-sm font-medium">Position</span>}
-                  name="employeePosition"
-                  rules={[{ required: showEmployeeFields, message: "Required" }]}
-                >
-                  <Select
-                    placeholder="Select employee department"
-                    size="large"
-                    suffixIcon={<IoChevronForwardOutline className="text-gray-400" />}
-                  >
-                    <Option value="Manager">Manager</Option>
-                    <Option value="Developer">Developer</Option>
-                    <Option value="Software Engineer">Software Engineer</Option>
-                    <Option value="Designer">Designer</Option>
-                    <Option value="HR">HR</Option>
-                  </Select>
-                </Form.Item>
-              </div>
-            )}
-
-            {/* Notice Type and Publish Date */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+              {/* Target Department/Individual */}
               <Form.Item
-                label={<span className="text-sm font-medium">Notice Type</span>}
-                name="type"
-                rules={[{ required: true, message: "Please select notice type" }]}
+                label={<span className="text-sm font-medium">Target Department(s) or Individual</span>}
+                name="target"
+                rules={[{ required: true, message: "Please select target" }]}
+                className="bg-gray-100 p-4 rounded-md"
               >
                 <Select
-                  placeholder="Select Notice Type"
+                  placeholder="Individual"
                   size="large"
                   suffixIcon={<IoChevronForwardOutline className="text-gray-400" />}
+                  onChange={handleTargetChange}
                 >
-                  {noticeTypeOptions.map(option => (
+                  {targetOptions.map(option => (
                     <Option key={option.value} value={option.value}>
                       {option.label}
                     </Option>
@@ -343,120 +264,203 @@ const CreateNotice = () => {
                 </Select>
               </Form.Item>
 
+              {/* Notice Title */}
               <Form.Item
-                label={<span className="text-sm font-medium">Publish Date</span>}
-                name="publishDate"
-                rules={[{ required: true, message: "Please select publish date" }]}
+                label={<span className="text-sm font-medium">Notice Title</span>}
+                name="title"
+                rules={[{ required: true, message: "Please enter notice title" }]}
               >
-                <DatePicker
-                  placeholder="Select Publishing Date"
+                <Input
+                  placeholder="Write the Title of Notice"
                   size="large"
-                  className="w-full"
-                  showTime
-                  format="YYYY-MM-DD HH:mm"
-                  suffixIcon={<FiCalendar className="text-gray-400" size={16} />}
                 />
               </Form.Item>
-            </div>
 
-            {/* Notice Body */}
-            <Form.Item
-              label={<span className="text-sm font-medium">Notice Body</span>}
-              name="body"
-              rules={[{ required: true, message: "Please enter notice body" }]}
-            >
-              <TextArea
-                placeholder="Write the details about notice"
-                rows={6}
-                className="resize-none"
-              />
-            </Form.Item>
-
-            {/* Upload Attachments */}
-            <div className="mb-6">
-              <label className="text-sm font-medium text-gray-700 mb-2 block">
-                Upload Attachments <span className="text-gray-400 font-normal">(optional)</span>
-              </label>
-
-              <label htmlFor="file-upload" className="cursor-pointer">
-                <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-teal-400 transition-colors">
-                  <MdOutlineCloudUpload className="mx-auto text-teal-500 mb-2" size={40} />
-                  <p className="text-sm text-gray-600">
-                    <span className="text-teal-500 font-medium">Upload</span> nominee profile image or drag and drop.
-                  </p>
-                  <p className="text-xs text-gray-400 mt-1">
-                    Accepted File Type: jpg, png, pdf
-                  </p>
-                </div>
-              </label>
-              <input
-                id="file-upload"
-                type="file"
-                multiple
-                accept=".jpg,.jpeg,.png,.pdf"
-                className="!hidden"
-                onChange={handleFileChange}
-              />
-
-              {/* Display uploaded files */}
-              {fileList.length > 0 && (
-                <div className="mt-4 space-y-2">
-                  {fileList.map(file => (
-                    <div
-                      key={file.uid}
-                      className="flex items-center justify-between bg-gray-50 px-4 py-2 rounded border border-gray-200"
+              {/* Employee Fields - Show only when Individual is selected */}
+              {showEmployeeFields && (
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                  <Form.Item
+                    label={<span className="text-sm font-medium">Select Employee ID</span>}
+                    name="employeeId"
+                    rules={[{ required: showEmployeeFields, message: "Required" }]}
+                  >
+                    <Select
+                      placeholder="Select employee designation"
+                      size="large"
+                      suffixIcon={<IoChevronForwardOutline className="text-gray-400" />}
                     >
-                      <div className="flex items-center gap-2">
-                        <FiPaperclip className="text-gray-400" size={16} />
-                        <span className="text-sm text-gray-700">{file.name}</span>
-                        {file.isExisting && (
-                          <span className="text-xs text-green-600 bg-green-50 px-2 py-0.5 rounded">Existing</span>
-                        )}
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => handleRemoveFile(file)}
-                        className="text-gray-400 hover:text-red-500 transition-colors"
-                      >
-                        <FiX size={18} />
-                      </button>
-                    </div>
-                  ))}
+                      <Option value="EMP001">EMP001</Option>
+                      <Option value="EMP002">EMP002</Option>
+                      <Option value="EMP12345">EMP12345</Option>
+                    </Select>
+                  </Form.Item>
+
+                  <Form.Item
+                    label={<span className="text-sm font-medium">Employee Name</span>}
+                    name="employeeName"
+                    rules={[{ required: showEmployeeFields, message: "Required" }]}
+                  >
+                    <Input
+                      placeholder="Enter employee full name"
+                      size="large"
+                    />
+                  </Form.Item>
+
+                  <Form.Item
+                    label={<span className="text-sm font-medium">Position</span>}
+                    name="employeePosition"
+                    rules={[{ required: showEmployeeFields, message: "Required" }]}
+                  >
+                    <Select
+                      placeholder="Select employee department"
+                      size="large"
+                      suffixIcon={<IoChevronForwardOutline className="text-gray-400" />}
+                    >
+                      <Option value="Manager">Manager</Option>
+                      <Option value="Developer">Developer</Option>
+                      <Option value="Software Engineer">Software Engineer</Option>
+                      <Option value="Designer">Designer</Option>
+                      <Option value="HR">HR</Option>
+                    </Select>
+                  </Form.Item>
                 </div>
               )}
-            </div>
 
-            {/* Action Buttons */}
-            <div className="flex justify-end gap-3 pt-4 border-t">
-              <Button
-                size="large"
-                onClick={() => navigate('/notice-board')}
-                className="px-8"
-                disabled={isUploading || isStoring || isUpdating}
-              >
-                Cancel
-              </Button>
+              {/* Notice Type and Publish Date */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <Form.Item
+                  label={<span className="text-sm font-medium">Notice Type</span>}
+                  name="type"
+                  rules={[{ required: true, message: "Please select notice type" }]}
+                >
+                  <Select
+                    placeholder="Select Notice Type"
+                    size="large"
+                    suffixIcon={<IoChevronForwardOutline className="text-gray-400" />}
+                  >
+                    {noticeTypeOptions.map(option => (
+                      <Option key={option.value} value={option.value}>
+                        {option.label}
+                      </Option>
+                    ))}
+                  </Select>
+                </Form.Item>
 
-              <Button
-                size="large"
-                onClick={() => form.validateFields().then(values => handleSubmit(values, true))}
-                loading={isUploading || isStoring || isUpdating}
-                className="px-8 border-blue-500 text-blue-500 hover:border-blue-600 hover:text-blue-600"
-              >
-                Save as Draft
-              </Button>
+                <Form.Item
+                  label={<span className="text-sm font-medium">Publish Date</span>}
+                  name="publishDate"
+                  rules={[{ required: true, message: "Please select publish date" }]}
+                >
+                  <DatePicker
+                    placeholder="Select Publishing Date"
+                    size="large"
+                    className="w-full py-3.5 rounded-xl"
+                    showTime
+                    format="YYYY-MM-DD HH:mm"
+                    suffixIcon={<FiCalendar className="text-gray-400" size={16} />}
+                  />
+                </Form.Item>
+              </div>
 
-              <Button
-                type="primary"
-                size="large"
-                htmlType="submit"
-                loading={isUploading || isStoring || isUpdating}
-                className="px-8 bg-orange-500 hover:bg-orange-600 border-none"
+              {/* Notice Body */}
+              <Form.Item
+                label={<span className="text-sm font-medium">Notice Body</span>}
+                name="body"
+                rules={[{ required: true, message: "Please enter notice body" }]}
               >
-                {isEditMode ? 'Update Notice' : 'Publish Notice'}
-              </Button>
-            </div>
-          </Form>
+                <TextArea
+                  placeholder="Write the details about notice"
+                  rows={6}
+                  className="resize-none"
+                />
+              </Form.Item>
+
+              {/* Upload Attachments */}
+              <div className="mb-6">
+                <label className="text-sm font-medium text-gray-700 mb-2 block">
+                  Upload Attachments <span className="text-gray-400 font-normal">(optional)</span>
+                </label>
+
+                <label htmlFor="file-upload" className="cursor-pointer">
+                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-teal-400 transition-colors">
+                    <MdOutlineCloudUpload className="mx-auto text-teal-500 mb-2" size={40} />
+                    <p className="text-sm text-gray-600">
+                      <span className="text-teal-500 font-medium">Upload</span> nominee profile image or drag and drop.
+                    </p>
+                    <p className="text-xs text-gray-400 mt-1">
+                      Accepted File Type: jpg, png, pdf
+                    </p>
+                  </div>
+                </label>
+                <input
+                  id="file-upload"
+                  type="file"
+                  multiple
+                  accept=".jpg,.jpeg,.png,.pdf"
+                  className="!hidden"
+                  onChange={handleFileChange}
+                />
+
+                {/* Display uploaded files */}
+                {fileList.length > 0 && (
+                  <div className="mt-4 space-y-2">
+                    {fileList.map(file => (
+                      <div
+                        key={file.uid}
+                        className="flex items-center justify-between bg-gray-50 px-4 py-2 rounded border border-gray-200"
+                      >
+                        <div className="flex items-center gap-2">
+                          <FiPaperclip className="text-gray-400" size={16} />
+                          <span className="text-sm text-gray-700">{file.name}</span>
+                          {file.isExisting && (
+                            <span className="text-xs text-green-600 bg-green-50 px-2 py-0.5 rounded">Existing</span>
+                          )}
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveFile(file)}
+                          className="text-gray-400 hover:text-red-500 transition-colors"
+                        >
+                          <FiX size={18} />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex justify-end gap-3 pt-4 border-t">
+                <Button
+                  size="large"
+                  onClick={() => navigate('/notice-board')}
+                  className="px-8"
+                  disabled={isUploading || isStoring || isUpdating}
+                >
+                  Cancel
+                </Button>
+
+                <Button
+                  size="large"
+                  onClick={() => form.validateFields().then(values => handleSubmit(values, true))}
+                  loading={isUploading || isStoring || isUpdating}
+                  className="px-8 border-blue-500 text-blue-500 hover:border-blue-600 hover:text-blue-600"
+                >
+                  Save as Draft
+                </Button>
+
+                <Button
+                  type="primary"
+                  size="large"
+                  htmlType="submit"
+                  loading={isUploading || isStoring || isUpdating}
+                  className="px-8 bg-orange-500 hover:bg-orange-600 border-none"
+                >
+                  {isEditMode ? 'Update Notice' : 'Publish Notice'}
+                </Button>
+              </div>
+            </Form>
+          </div>
         </div>
       </LoaderWraperComp>
     </div>
